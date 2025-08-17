@@ -1,0 +1,8 @@
+body { font-family: Arial, sans-serif; margin: 0; padding: 20px; background: #f6f6f6; }
+header { display: flex; justify-content: space-between; align-items: center; }
+h1, h2 { color: #333; }
+input, textarea { width: 100%; margin: 10px 0; padding: 10px; }
+button { background: #6A0DAD; color: white; border: none; padding: 10px; cursor: pointer; }
+button:hover { background: #8B30C8; }
+#posts-container div { background: white; padding: 15px; margin: 10px 0; border: 1px solid #ddd; }
+#comments-container div { background: #eee; padding: 10px; margin: 5px 0; }

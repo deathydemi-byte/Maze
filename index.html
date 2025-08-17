@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MAZE</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header>
+    <h1>MAZE</h1>
+    <div id="auth-section">
+      <button id="signup-btn">Sign Up</button>
+      <button id="login-btn">Login</button>
+      <button id="logout-btn" style="display:none;">Logout</button>
+    </div>
+  </header>
+
+  <main>
+    <section id="create-post">
+      <h2>Create a Post</h2>
+      <input id="post-title" placeholder="Title">
+      <textarea id="post-content" placeholder="Content"></textarea>
+      <button id="submit-post">Submit</button>
+    </section>
+
+    <section id="posts-list">
+      <h2>Posts</h2>
+      <div id="posts-container"></div>
+    </section>
+
+    <section id="post-detail" style="display:none;">
+      <h2 id="post-title-detail"></h2>
+      <p id="post-content-detail"></p>
+      <div id="comments-container"></div>
+      <textarea id="comment-input" placeholder="Add comment"></textarea>
+      <button id="submit-comment">Comment</button>
+      <button id="back-btn">Back</button>
+    </section>
+  </main>
+
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>
