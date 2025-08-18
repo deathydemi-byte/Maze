@@ -1,6 +1,5 @@
-// === MAZE App JavaScript (using Firebase Compat SDK) ===
+// === MAZE App JavaScript (Dark Reddit Style) ===
 
-// Firebase project configuration
 const firebaseConfig = {
   apiKey: "AIzaSyCTx_vaJNCgo3jq6S2aYJ2i9mxO1a0Ci70",
   authDomain: "maze-bf7b9.firebaseapp.com",
@@ -11,12 +10,10 @@ const firebaseConfig = {
   measurementId: "G-X2C7Y4917D"
 };
 
-// Initialize Firebase
 firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.firestore();
 
-// DOM elements
 const authSection = document.getElementById('auth-section');
 const postsContainer = document.getElementById('posts-container');
 const submitPostBtn = document.getElementById('submit-post');
@@ -34,7 +31,6 @@ const backBtn = document.getElementById('back-btn');
 
 let currentPostId = null;
 
-// Auth state
 auth.onAuthStateChanged(user => {
   if (user) {
     authSection.innerHTML = `
@@ -53,7 +49,6 @@ auth.onAuthStateChanged(user => {
   }
 });
 
-// Signup
 function signup() {
   const email = prompt("Enter email:");
   const pass = prompt("Enter password:");
@@ -63,7 +58,6 @@ function signup() {
   }
 }
 
-// Login
 function login() {
   const email = prompt("Enter email:");
   const pass = prompt("Enter password:");
@@ -73,7 +67,6 @@ function login() {
   }
 }
 
-// Load posts
 function loadPosts() {
   db.collection('posts').orderBy('timestamp', 'desc').onSnapshot(snapshot => {
     postsContainer.innerHTML = '';
@@ -81,23 +74,22 @@ function loadPosts() {
       const post = { id: doc.id, ...doc.data() };
       const div = document.createElement('div');
       div.innerHTML = `
-        <h3>${post.title} <span>Upvotes: ${post.upvotes || 0}</span></h3>
-        <p>${post.content}</p>
+        <div class="vote-box">
+          <button onclick="upvotePost('${post.id}')">⬆️</button>
+          <div>${post.upvotes || 0}</div>
+          <button>⬇️</button>
+        </div>
+        <div>
+          <h3>${post.title}</h3>
+          <p>${post.content}</p>
+          <button onclick="viewPost(${JSON.stringify(post).replace(/"/g, '&quot;')})">View Comments</button>
+        </div>
       `;
-      const upBtn = document.createElement('button');
-      upBtn.textContent = 'Upvote';
-      upBtn.onclick = () => upvotePost(post.id);
-      const viewBtn = document.createElement('button');
-      viewBtn.textContent = 'View Comments';
-      viewBtn.onclick = () => viewPost(post);
-      div.appendChild(upBtn);
-      div.appendChild(viewBtn);
       postsContainer.appendChild(div);
     });
   });
 }
 
-// Submit post
 submitPostBtn.onclick = () => {
   if (!auth.currentUser) return alert('Please sign in first');
   if (postTitle.value && postContent.value) {
@@ -113,7 +105,6 @@ submitPostBtn.onclick = () => {
   }
 };
 
-// Upvote
 function upvotePost(postId) {
   if (!auth.currentUser) return alert('Please sign in first');
   db.collection('posts').doc(postId).update({
@@ -121,7 +112,6 @@ function upvotePost(postId) {
   });
 }
 
-// View post
 function viewPost(post) {
   currentPostId = post.id;
   postTitleDet.textContent = post.title;
@@ -132,7 +122,6 @@ function viewPost(post) {
   loadComments(post.id);
 }
 
-// Load comments
 function loadComments(postId) {
   db.collection(`posts/${postId}/comments`).orderBy('timestamp', 'desc')
     .onSnapshot(snapshot => {
@@ -146,7 +135,6 @@ function loadComments(postId) {
     });
 }
 
-// Submit comment
 submitCmtBtn.onclick = () => {
   if (!auth.currentUser) return alert('Please sign in first');
   if (!currentPostId) return;
@@ -161,7 +149,6 @@ submitCmtBtn.onclick = () => {
   }
 };
 
-// Back button
 backBtn.onclick = () => {
   postDetailSec.style.display = 'none';
   postsListSec.style.display = 'block';
