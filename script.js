@@ -18,96 +18,100 @@ const db = firebase.firestore();
 
 // DOM elements
 const authSection = document.getElementById('auth-section');
-const createPostSec = document.getElementById('create-post');
-const postsListSec = document.getElementById('posts-list');
 const postsContainer = document.getElementById('posts-container');
+const submitPostBtn = document.getElementById('submit-post');
+const postTitle = document.getElementById('post-title');
+const postContent = document.getElementById('post-content');
 const postDetailSec = document.getElementById('post-detail');
+const postsListSec = document.getElementById('posts-list');
+const createPostSec = document.getElementById('create-post');
 const postTitleDet = document.getElementById('post-title-detail');
 const postContentDet = document.getElementById('post-content-detail');
 const commentsContainer = document.getElementById('comments-container');
 const commentInput = document.getElementById('comment-input');
-const submitPostBtn = document.getElementById('submit-post');
 const submitCmtBtn = document.getElementById('submit-comment');
 const backBtn = document.getElementById('back-btn');
 
 let currentPostId = null;
-let unsubscribePosts = null;
-let unsubscribeComments = null;
 
-// Check if user signed in
+// Auth state
 auth.onAuthStateChanged(user => {
   if (user) {
-    authSection.innerHTML = `<span>Welcome, ${user.email}</span> <button id="logout-btn">Logout</button>`;
-    document.getElementById('logout-btn').addEventListener('click', () => auth.signOut());
+    authSection.innerHTML = `
+      <span>Welcome, ${user.email}</span>
+      <button id="logout-btn">Logout</button>
+    `;
+    document.getElementById('logout-btn').onclick = () => auth.signOut();
     loadPosts();
   } else {
-    authSection.innerHTML = `<button id="signup-btn">Sign Up</button> <button id="login-btn">Login</button>`;
-    document.getElementById('signup-btn').addEventListener('click', doSignup);
-    document.getElementById('login-btn').addEventListener('click', doLogin);
+    authSection.innerHTML = `
+      <button id="signup-btn">Sign Up</button>
+      <button id="login-btn">Login</button>
+    `;
+    document.getElementById('signup-btn').onclick = signup;
+    document.getElementById('login-btn').onclick = login;
   }
 });
 
 // Signup
-function doSignup() {
-  const email = prompt('Enter Email:');
-  const password = prompt('Enter Password (min 6 chars):');
-  if (email && password) {
-    auth.createUserWithEmailAndPassword(email, password)
-      .catch(err => alert('Signup Error: ' + err.message));
+function signup() {
+  const email = prompt("Enter email:");
+  const pass = prompt("Enter password:");
+  if (email && pass) {
+    auth.createUserWithEmailAndPassword(email, pass)
+      .catch(err => alert("Signup error: " + err.message));
   }
 }
 
 // Login
-function doLogin() {
-  const email = prompt('Enter Email:');
-  const password = prompt('Enter Password:');
-  if (email && password) {
-    auth.signInWithEmailAndPassword(email, password)
-      .catch(err => alert('Login Error: ' + err.message));
+function login() {
+  const email = prompt("Enter email:");
+  const pass = prompt("Enter password:");
+  if (email && pass) {
+    auth.signInWithEmailAndPassword(email, pass)
+      .catch(err => alert("Login error: " + err.message));
   }
 }
 
 // Load posts
 function loadPosts() {
-  if (unsubscribePosts) unsubscribePosts();
-  unsubscribePosts = db.collection('posts').orderBy('timestamp', 'desc')
-    .onSnapshot(snapshot => {
-      postsContainer.innerHTML = '';
-      snapshot.forEach(doc => {
-        const post = { id: doc.id, ...doc.data() };
-        const div = document.createElement('div');
-        div.innerHTML = `
-          <h3>${post.title} <span>Upvotes: ${post.upvotes || 0}</span></h3>
-          <p>${post.content}</p>
-        `;
-        const upBtn = document.createElement('button');
-        upBtn.textContent = 'Upvote';
-        upBtn.onclick = () => upvotePost(post.id);
-        const viewBtn = document.createElement('button');
-        viewBtn.textContent = 'View Comments';
-        viewBtn.onclick = () => viewPost(post);
-        div.appendChild(upBtn);
-        div.appendChild(viewBtn);
-        postsContainer.appendChild(div);
-      });
+  db.collection('posts').orderBy('timestamp', 'desc').onSnapshot(snapshot => {
+    postsContainer.innerHTML = '';
+    snapshot.forEach(doc => {
+      const post = { id: doc.id, ...doc.data() };
+      const div = document.createElement('div');
+      div.innerHTML = `
+        <h3>${post.title} <span>Upvotes: ${post.upvotes || 0}</span></h3>
+        <p>${post.content}</p>
+      `;
+      const upBtn = document.createElement('button');
+      upBtn.textContent = 'Upvote';
+      upBtn.onclick = () => upvotePost(post.id);
+      const viewBtn = document.createElement('button');
+      viewBtn.textContent = 'View Comments';
+      viewBtn.onclick = () => viewPost(post);
+      div.appendChild(upBtn);
+      div.appendChild(viewBtn);
+      postsContainer.appendChild(div);
     });
+  });
 }
 
 // Submit post
-submitPostBtn.addEventListener('click', () => {
+submitPostBtn.onclick = () => {
   if (!auth.currentUser) return alert('Please sign in first');
-  const title = document.getElementById('post-title').value;
-  const content = document.getElementById('post-content').value;
-  if (title && content) {
+  if (postTitle.value && postContent.value) {
     db.collection('posts').add({
-      title, content, upvotes: 0,
+      title: postTitle.value,
+      content: postContent.value,
+      upvotes: 0,
       timestamp: firebase.firestore.FieldValue.serverTimestamp()
     }).then(() => {
-      document.getElementById('post-title').value = '';
-      document.getElementById('post-content').value = '';
+      postTitle.value = '';
+      postContent.value = '';
     });
   }
-});
+};
 
 // Upvote
 function upvotePost(postId) {
@@ -130,9 +134,7 @@ function viewPost(post) {
 
 // Load comments
 function loadComments(postId) {
-  if (unsubscribeComments) unsubscribeComments();
-  unsubscribeComments = db.collection(`posts/${postId}/comments`)
-    .orderBy('timestamp', 'desc')
+  db.collection(`posts/${postId}/comments`).orderBy('timestamp', 'desc')
     .onSnapshot(snapshot => {
       commentsContainer.innerHTML = '';
       snapshot.forEach(doc => {
@@ -145,7 +147,7 @@ function loadComments(postId) {
 }
 
 // Submit comment
-submitCmtBtn.addEventListener('click', () => {
+submitCmtBtn.onclick = () => {
   if (!auth.currentUser) return alert('Please sign in first');
   if (!currentPostId) return;
   const text = commentInput.value;
@@ -157,11 +159,11 @@ submitCmtBtn.addEventListener('click', () => {
       commentInput.value = '';
     });
   }
-});
+};
 
 // Back button
-backBtn.addEventListener('click', () => {
+backBtn.onclick = () => {
   postDetailSec.style.display = 'none';
   postsListSec.style.display = 'block';
   createPostSec.style.display = 'block';
-});
+};
